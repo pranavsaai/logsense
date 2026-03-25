@@ -6,7 +6,7 @@ import {
 } from "recharts";
 import { AlertTriangle, Activity, Zap, Brain, Shield, Radio, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 
-const API = "http://localhost:8000";
+const API = "https://logsense-vf1n.onrender.com";
 
 function safeNum(v) {
   const n = parseFloat(v);
