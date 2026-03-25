@@ -26,4 +26,4 @@ while True:
     except:
         print("Collector not reachable")
 
-    time.sleep(0.5)
+    time.sleep(0.05)
