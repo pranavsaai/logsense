@@ -3,7 +3,7 @@ import random
 import time
 from datetime import datetime
 
-URL = "http://127.0.0.1:8000/logs"
+URL = "https://logsense-vf1n.onrender.com/logs"
 
 services = ["auth-service", "payment-service", "order-service"]
 levels = ["INFO", "WARN", "ERROR"]
