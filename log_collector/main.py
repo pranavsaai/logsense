@@ -35,26 +35,28 @@ class AISummaryRequest(BaseModel):
     alerts: List[dict]
     timestamp: Optional[str] = None
 
-@app.post("/logs")
-def receive_log(log: Log):
-    data = log.dict()
-    data["timestamp"] = str(data["timestamp"])
-
+@app.get("/logs")
+def get_logs():
     cursor.execute("""
-        INSERT INTO logs (service_name, log_level, message, endpoint, latency_ms, timestamp)
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """, (
-        data["service_name"],
-        data["log_level"],
-        data["message"],
-        data["endpoint"],
-        data["latency_ms"],
-        data["timestamp"]
-    ))
+        SELECT service_name, log_level, message, endpoint, latency_ms, timestamp
+        FROM logs
+        ORDER BY timestamp DESC
+        LIMIT 20
+    """)
 
-    conn.commit()
+    rows = cursor.fetchall()
 
-    return {"status": "log received"}
+    return [
+        {
+            "service": r[0],
+            "level": r[1],
+            "message": r[2],
+            "endpoint": r[3],
+            "latency": r[4],
+            "time": str(r[5])
+        }
+        for r in rows
+    ]
 
 @app.get("/logs/recent")
 def get_recent_logs():
