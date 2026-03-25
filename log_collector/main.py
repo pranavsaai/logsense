@@ -39,13 +39,22 @@ class AISummaryRequest(BaseModel):
 def receive_log(log: Log):
     data = log.dict()
     data["timestamp"] = str(data["timestamp"])
-    send_log(data)
 
-    with buffer_lock:
-        live_log_buffer.append(data)
+    cursor.execute("""
+        INSERT INTO logs (service_name, log_level, message, endpoint, latency_ms, timestamp)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (
+        data["service_name"],
+        data["log_level"],
+        data["message"],
+        data["endpoint"],
+        data["latency_ms"],
+        data["timestamp"]
+    ))
+
+    conn.commit()
 
     return {"status": "log received"}
-
 
 @app.get("/logs/recent")
 def get_recent_logs():
@@ -56,26 +65,28 @@ def get_recent_logs():
 
 @app.get("/metrics")
 def get_metrics():
-    try:
-        cursor.execute("""
-            SELECT service_name, request_count, error_count, avg_latency
-            FROM service_metrics
-            ORDER BY timestamp DESC
-            LIMIT 20
-        """)
-        rows = cursor.fetchall()
-        return [
-            {
-                "service": r[0],
-                "requests": r[1],
-                "errors": r[2],
-                "latency": r[3]
-            } for r in rows
-        ]
-    except Exception as e:
-        conn.rollback()
-        return {"error": str(e)}
+    cursor.execute("""
+        SELECT 
+            service_name,
+            COUNT(*) as request_count,
+            SUM(CASE WHEN log_level = 'ERROR' THEN 1 ELSE 0 END) as error_count,
+            AVG(latency_ms) as avg_latency
+        FROM logs
+        GROUP BY service_name
+        ORDER BY request_count DESC
+    """)
 
+    rows = cursor.fetchall()
+
+    return [
+        {
+            "service": r[0],
+            "requests": r[1],
+            "errors": r[2],
+            "latency": float(r[3])
+        }
+        for r in rows
+    ]
 
 @app.get("/alerts")
 def get_alerts():
