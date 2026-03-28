@@ -29,43 +29,6 @@
 
 ---
 
-## Setup Instructions
-
-### Backend (main.py)
-
-1. Install new dependency:
-   ```bash
-   pip install anthropic
-   ```
-
-2. Set your Anthropic API key:
-   ```bash
-   export ANTHROPIC_API_KEY=sk-ant-...
-   ```
-
-3. Replace `log-collector/main.py` with the new `main.py`
-
-4. Run as usual:
-   ```bash
-   uvicorn main:app --reload
-   ```
-
-### Frontend (page.js)
-
-Replace `logsense-dashboard/src/app/page.js` with the new `page.js`.
-
-No new npm packages needed — uses existing recharts + lucide-react.
-
----
-
-## Database: No Changes Needed
-
-All new endpoints use the existing `logs`, `service_metrics`, and `alerts` tables.
-
-The `/health-scores` endpoint does require your PostgreSQL `service_metrics` table to have a `timestamp` column (it should already if you followed the original schema).
-
----
-
 ## Architecture After Upgrade
 
 ```
